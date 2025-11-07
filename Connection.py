@@ -1,14 +1,16 @@
 import psycopg2
 import os
-from secret import actualdatabase, actualhost, actualpassword, actualuser
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def get_db_connection():
     try:
         conn = psycopg2.connect(
-            host=os.environ.get('PG_HOST', actualhost),
-            database=os.environ.get('PG_DB', actualdatabase),
-            user=os.environ.get('PG_USER', actualuser),
-            password=os.environ.get('PG_PASSWORD', actualpassword)
+            host=os.environ.get('PG_HOST', os.getenv("host")),
+            database=os.environ.get('PG_DB', os.getenv("database")),
+            user=os.environ.get('PG_USER', os.getenv("user")),
+            password=os.environ.get('PG_PASSWORD', os.getenv("password"))
         )
         print(f"Database connection successful")
         return conn
