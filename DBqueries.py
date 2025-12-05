@@ -68,9 +68,9 @@ def SearchMovie(conn, name):
         resultingMovies.append(movie(curr[0], curr[1], curr[2], curr[3], curr[4], curr[5], curr[6]))
     return resultingMovies
 
-def ChangeMovieRating(conn, name, rating):
+#def ChangeMovieRating(conn, name, rating):
 
-def ChangeCriticScore(conn, name, criticscore):
+#def ChangeCriticScore(conn, name, criticscore):
 
 #Find and Manage Top Reviews
 
@@ -112,7 +112,7 @@ def DeleteTopReview(conn, name):
         conn.rollback()
         return "Error removing review: " + e
 
-def ChangeTopReviewRating(conn, name, rating):
+#def ChangeTopReviewRating(conn, name, rating):
 
 #Find and Manage Reviews
 
@@ -134,7 +134,7 @@ def FetchUserReviews(conn, username):
         resultingReviews.append(review(curr[0], curr[1], curr[2], curr[3], curr[4], curr[5], curr[6]))
     return resultingReviews
 
-def AddReview(conn, username, text, rating = 0, title):
+def AddReview(conn, username, text, title, rating = 0):
     if(title == ""):
         return "Please provide a movie name."
     if(len(text) < 20):
@@ -143,7 +143,7 @@ def AddReview(conn, username, text, rating = 0, title):
     cur.execute("Select * from movies where name = \'" + name.replace("\'", "\'\'") + "\';")
     if(len(cur.fetchall()) == 0):
         return "We do not have " + name + " as a movie, please make sure there are no typos, or add the movie to the out database."
-     cur.execute("Select * from users where username = \'" + username.replace("\'", "\'\'") + "\';")
+    cur.execute("Select * from users where username = \'" + username.replace("\'", "\'\'") + "\';")
     if(len(cur.fetchall()) == 0):
         return "The user " + username + " does not exist, please make sure there are no typos."
     query = "INSERT INTO userreviews (username, text, rating, name) VALUES (\'" + username.replace("\'", "\'\'") + "\', \'" + text.replace("\'", "\'\'") + "\', " + str(rating) + ", \'" + title.replace("\'", "\'\'") + "\');"
@@ -183,7 +183,7 @@ def EditReview(conn, username, title, text):
         conn.rollback()
         return "Error updating review: " + e
 
-def ChangeReviewRating(conn, username, title, rating):
+#def ChangeReviewRating(conn, username, title, rating):
 
 #Find and Manage Users
 

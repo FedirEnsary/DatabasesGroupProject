@@ -8,9 +8,7 @@ conn = get_db_connection()
 
 @component
 def HelloWorld():
-    print(AddMovie(conn, "Clampowder", "bodega", 1993, 5.4, 88, "Drama", "John Doe"))
     result = FetchRandomMovie(conn, 10)
-    print("ding")
     return html.div(
         [
             html.div({"key": i, "class_name": "movie-div"}, m.toHtml())
