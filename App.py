@@ -1,18 +1,19 @@
 from reactpy import component, html
 from reactpy.backend.sanic import Sanic
 from reactpy.backend.sanic import configure
-from Connection import get_db_connection
+from Frontend.home import HomeScreen
+from Frontend.movie import MovieScreen
+from Frontend.user import UserProfile
 
-conn = get_db_connection()
+# from Connection import get_db_connection
 
-@component
-def HelloWorld():
-    return html.h1("Hello, world!")
 
+# conn = get_db_connection()
 
 app = Sanic("MyApp")
-configure(app, HelloWorld)
+configure(app, UserProfile)
 
 
 if __name__ == "__main__":
     app.run(port=8000)
+    
