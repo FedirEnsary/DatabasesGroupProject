@@ -3,7 +3,7 @@ from Frontend.movie import HomeBtn, UpvoteBtn, DownvoteBtn
 
 
 @component
-def UserProfile():
+def UserProfile(username, reviews, go_home, go_to_movie):
     return html.div(
         {
             "style": {
@@ -16,24 +16,24 @@ def UserProfile():
                 "paddingLeft": "12px"                
             }
         },
-        HomeBtn(),
+        HomeBtn(go_home),
         html.h1(
             {
                 "style": {
                     "fontSize": "48px"
                 }
             },  
-            "USERNAME"
+            username
         ),
-        html.p("EMAIL (OPTIONAL)"),
-        Review(),
-        Review(),
-        Review()
+        [
+            UserReviewEntry(review=r, go_to_movie=go_to_movie)
+            for r in reviews
+        ]
         
     )
     
 @component
-def Review():
+def Review(review, go_to_movie):
     return html.div(
         {
             "style": {
@@ -55,8 +55,7 @@ def Review():
                     "gap": "8px"
                 }
             },
-            html.p("Review for: MOVIE"),
-            MovieBtn(),
+            html.h2(review.title),
         ),
         
         html.div(
@@ -69,18 +68,8 @@ def Review():
                     "gap":"8px"
                 }
             },
-            html.p("REVIEW"),
+            html.p(review.text),
             UpvoteBtn(),
             DownvoteBtn()
         )
-    )
-    
-#button to go to the movie of the review
-@component
-def MovieBtn():
-    def btn_click(event):
-        print("go to movie")
-    return html.button(
-        {"on_click": btn_click},
-        "Movie"
     )

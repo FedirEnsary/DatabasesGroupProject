@@ -1,7 +1,7 @@
 from reactpy import component, html
 
 @component
-def HomeScreen():
+def HomeScreen(movies, on_select_movie):
     return html.div(
         {
             "style": {
@@ -21,14 +21,15 @@ def HomeScreen():
                 }
             },  
             "Movie Review Compatibility"),
-        Movie(),
-        Movie(),
-        Movie()
+         [
+            Movie(movie=m, on_select=lambda e, m=m: on_select_movie(m), key=i)
+            for i, m in enumerate(movies)
+        ]
     )
     
 # Movie component for home page. Gives basic information
 @component
-def Movie():
+def Movie(movie, on_select):
     return html.div(
         {
             "style": {
@@ -49,8 +50,8 @@ def Movie():
                     "gap": "16px"
                 }
             },
-            html.h2("MOVIE NAME"),
-            html.h3("(YEAR)")
+            html.h2(movie.name),
+            html.h3(f"({movie.releasedate})")
         ),
         html.div(
             {
@@ -61,7 +62,7 @@ def Movie():
                 }
             },
             html.p("Directed By:"),
-            html.p("DIRECTOR")
+            html.p(movie.director)
         ),
         html.div(
             {
@@ -72,7 +73,7 @@ def Movie():
                 }
             },
             html.p("Genre:"),
-            html.p("GENRE")
+            html.p(movie.genre)
         ),
         html.div(
             {
@@ -91,7 +92,7 @@ def Movie():
                     }
                 },
                 html.p("Rating:"),
-                html.p("RATING")
+                html.p(movie.rating)
             ),
             html.div(
                 {
@@ -102,18 +103,10 @@ def Movie():
                     }
                 },
                 html.p("Critic Score:"),
-                html.p("CRITIC SCORE")
+                html.p(movie.criticscore)
             ),
         ),
-        html.p("DESCRIPTION"),
-        ReviewBtn()
+        html.p(movie.description),
+        html.button({"on_click": on_select}, "Go to movie")
     )
 
-@component
-def ReviewBtn():
-    def btn_click(event):
-        print("hi")
-    return html.button(
-        {"on_click": btn_click},
-        "Go to movie"
-    ) 

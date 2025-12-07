@@ -1,7 +1,8 @@
 from reactpy import component, html
+from router import navigate
 
 @component
-def MovieScreen():
+def MovieScreen(movie, go_home):
     return html.div(
         {
             "style": {
@@ -21,14 +22,14 @@ def MovieScreen():
                     "fontSize": "48px"
                 }
             },  
-            "MOVIE NAME (YEAR)"
+            f"{movie.title} ({movie.year})"
         ),
-        MovieInfo()
+        MovieInfo(movie)
     )
 
 #movie informaiton that is show on the home page
 @component
-def MovieInfo():
+def MovieInfo(movie):
     return html.div(
         {
             "style": {
@@ -40,7 +41,7 @@ def MovieInfo():
                     "width": "30vw",                       
                 }
         },
-        html.div(
+       html.div(
             {
                 "style": {
                     "display": "flex",
@@ -49,7 +50,7 @@ def MovieInfo():
                 }
             },
             html.p("Directed By:"),
-            html.p("DIRECTOR")
+            html.p(movie.director)
         ),
         html.div(
             {
@@ -60,7 +61,7 @@ def MovieInfo():
                 }
             },
             html.p("Genre:"),
-            html.p("GENRE")
+            html.p(movie.genre)
         ),
         html.div(
             {
@@ -79,7 +80,7 @@ def MovieInfo():
                     }
                 },
                 html.p("Rating:"),
-                html.p("RATING")
+                html.p(movie.rating)
             ),
             html.div(
                 {
@@ -90,17 +91,17 @@ def MovieInfo():
                     }
                 },
                 html.p("Critic Score:"),
-                html.p("CRITIC SCORE")
+                html.p(movie.criticscore)
             ),
         ),
-        html.p("DESCRIPTION"),
+        html.p(movie.description),
         Review() #display the reviews here
         
     )
 
 #individual movie review
 @component
-def Review():
+def Review(review):
     return html.div(
         {
             "style": {
@@ -112,7 +113,8 @@ def Review():
                 "width": "60vw",                       
             }
         },
-        html.p("USER"),
+        html.h2(review.title),
+        html.p(review.username),
         UserBtn(),
         html.div(
             {
@@ -123,7 +125,7 @@ def Review():
                     "alignItems": "center"
                 }
             },
-            html.p("REVIEW"),
+            html.p(review.text),
             UpvoteBtn(),
             DownvoteBtn()
         )
@@ -148,22 +150,19 @@ def DownvoteBtn():
         "Downvote"
     ) 
 
-#button for viewing user profile
 @component
-def UserBtn():
+def UserBtn(username):
     def btn_click(event):
-        print("view user profile")
+        navigate(f"/user/{username}")
+
     return html.button(
         {"on_click": btn_click},
-        "User Profile"
-    ) 
+        f"View {username}'s Profile"
+    )
     
-@component
-def HomeBtn():
-    def btn_click(event):
-        print("go home")
+def HomeBtn(go_home):
     return html.button(
-        {"on_click": btn_click},
+        {"on_click": lambda event: go_home()},
         "Home"
     )
 
