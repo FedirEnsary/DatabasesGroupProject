@@ -1,7 +1,8 @@
 from Classes import *
 import Connection
 import bcrypt
-from InfernalMachine import CompareReviews
+from psycopg2 import *
+from comparison import CompareReviews
 
 #Bcrypt Hashing
 
@@ -10,7 +11,7 @@ def hashPassword(password):
     return hashed
 
 def verifyPassword(hashedPassword, providedPassword):
-    return bcrypt.checkpw(providedPassword.encode('utf-8'), hashedPassword)
+    return bcrypt.checkpw((providedPassword.rstrip()).encode('utf-8'), hashedPassword.encode('utf-8'))
 
 #Find and Manage Movies
 
@@ -41,9 +42,9 @@ def AddMovie(conn, name, desc="", year=0, rtng=0.0, crtc=0, gnre="", drct=""):
         cur.execute(query)
         conn.commit()
         return name + " added to movies Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error adding movie: " + e
+        return "Error adding movie: " + str(e)
 
 def DeleteMovie(conn, name):
     cur = conn.cursor()
@@ -55,9 +56,9 @@ def DeleteMovie(conn, name):
         cur.execute(query)
         conn.commit()
         return "Removed movie Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error removing movie: " + e
+        return "Error removing movie: " + str(e)
 
 def SearchMovie(conn, name):
     cur = conn.cursor()
@@ -78,9 +79,9 @@ def ChangeMovieRating(conn, name, rating):
         cur.execute(query)
         conn.commit()
         return "Updated rating Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error updating rating: " + e
+        return "Error updating rating: " + str(e)
 
 def ChangeCriticScore(conn, name, criticscore):
     cur = conn.cursor()
@@ -92,9 +93,9 @@ def ChangeCriticScore(conn, name, criticscore):
         cur.execute(query)
         conn.commit()
         return "Updated rating Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error updating rating: " + e
+        return "Error updating rating: " + str(e)
 
 #Find and Manage Top Reviews
 
@@ -118,9 +119,9 @@ def AddTopReview(conn, name, text = "", rating = 0, title = ""):
         cur.execute(query)
         conn.commit()
         return "Added to top reviews Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error adding review: " + e
+        return "Error adding review: " + str(e)
 
 def DeleteTopReview(conn, name):
     cur = conn.cursor()
@@ -132,23 +133,23 @@ def DeleteTopReview(conn, name):
         cur.execute(query)
         conn.commit()
         return "Removed from top reviews Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error removing review: " + e
+        return "Error removing review: " + str(e)
 
 def ChangeTopReviewRating(conn, name, rating):
     cur = conn.cursor()
-        cur.execute("Select * from  topreviews where name = \'" + name.replace("\'", "\'\'") + "\';")
-        if(len(cur.fetchall()) == 0):
-            return "We do not have a movie " + name + ", please make sure there are no typos."
-        query = "UPDATE movies SET Rating = \'" + str(rating) + "\' WHERE name = \'" + name.replace("\'", "\'\'") + "\';"
-        try:
-            cur.execute(query)
-            conn.commit()
-            return "Updated review rating Sucessfully."
-        except psycopg2.Error as e:
-            conn.rollback()
-            return "Error updating review rating: " + e
+    cur.execute("Select * from  topreviews where name = \'" + name.replace("\'", "\'\'") + "\';")
+    if(len(cur.fetchall()) == 0):
+        return "We do not have a movie " + name + ", please make sure there are no typos."
+    query = "UPDATE movies SET Rating = \'" + str(rating) + "\' WHERE name = \'" + name.replace("\'", "\'\'") + "\';"
+    try:
+        cur.execute(query)
+        conn.commit()
+        return "Updated review rating Sucessfully."
+    except Error as e:
+        conn.rollback()
+        return "Error updating review rating: " + str(e)
 
 #Find and Manage Reviews
 
@@ -176,9 +177,9 @@ def AddReview(conn, username, text, title, rating = 0):
     if(len(text) < 20):
         return "Please provide a more meaningful review."
     cur = conn.cursor()
-    cur.execute("Select * from movies where name = \'" + name.replace("\'", "\'\'") + "\';")
+    cur.execute("Select * from movies where name = \'" + username.replace("\'", "\'\'") + "\';")
     if(len(cur.fetchall()) == 0):
-        return "We do not have " + name + " as a movie, please make sure there are no typos, or add the movie to the out database."
+        return "We do not have " + username + " as a movie, please make sure there are no typos, or add the movie to the out database."
     cur.execute("Select * from users where username = \'" + username.replace("\'", "\'\'") + "\';")
     if(len(cur.fetchall()) == 0):
         return "The user " + username + " does not exist, please make sure there are no typos."
@@ -187,51 +188,51 @@ def AddReview(conn, username, text, title, rating = 0):
         cur.execute(query)
         conn.commit()
         return "Added to reviews Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error adding review: " + e
+        return "Error adding review: " + str(e)
 
 def DeleteReview(conn, username, title):
     cur = conn.cursor()
-    cur.execute("Select * from  userreviews where name = \'" + name.replace("\'", "\'\'") + "\' and username = \'" + username.replace("\'", "\'\'") + "\';")
+    cur.execute("Select * from  userreviews where name = \'" + username.replace("\'", "\'\'") + "\' and username = \'" + username.replace("\'", "\'\'") + "\';")
     if(len(cur.fetchall()) == 0):
-        return "We do not have a review for " + name + " made by " + username + ", please make sure there are no typos."
-    query = "DELETE FROM userreviews WHERE name = \'" + name.replace("\'", "\'\'") + "\' and username = \'" + username.replace("\'", "\'\'") + "\';"
+        return "We do not have a review for " + username + " made by " + username + ", please make sure there are no typos."
+    query = "DELETE FROM userreviews WHERE name = \'" + username.replace("\'", "\'\'") + "\' and username = \'" + username.replace("\'", "\'\'") + "\';"
     try:
         cur.execute(query)
         conn.commit()
         return "Removed from reviews Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error removing review: " + e
+        return "Error removing review: " + str(e)
 
 def EditReview(conn, username, title, text):
     cur = conn.cursor()
-    cur.execute("Select * from  userreviews where name = \'" + name.replace("\'", "\'\'") + "\' and username = \'" + username.replace("\'", "\'\'") + "\';")
+    cur.execute("Select * from  userreviews where name = \'" + title.replace("\'", "\'\'") + "\' and username = \'" + username.replace("\'", "\'\'") + "\';")
     if(len(cur.fetchall()) == 0):
-        return "We do not have a review for " + name + " made by " + username + ", please make sure there are no typos."
-    query = "UPDATE userreviews SET text = \'" + text.replace("\'", "\'\'") + "\' WHERE name = \'" + name.replace("\'", "\'\'") + "\' and username = \'" + username.replace("\'", "\'\'") + "\';"
+        return "We do not have a review for " + title + " made by " + username + ", please make sure there are no typos."
+    query = "UPDATE userreviews SET text = \'" + text.replace("\'", "\'\'") + "\' WHERE name = \'" + username.replace("\'", "\'\'") + "\' and username = \'" + username.replace("\'", "\'\'") + "\';"
     try:
         cur.execute(query)
         conn.commit()
         return "Updated review Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error updating review: " + e
+        return "Error updating review: " + str(e)
 
 def ChangeReviewRating(conn, username, title, rating):
     cur = conn.cursor()
-    cur.execute("Select * from userreviews where name = \'" + name.replace("\'", "\'\'") + "\' and username = \'" + username + "\';")
+    cur.execute("Select * from userreviews where name = \'" + title.replace("\'", "\'\'") + "\' and username = \'" + username + "\';")
     if(len(cur.fetchall()) == 0):
-        return "We do not have a review by " + username + " for a movie " + name + ", please make sure there are no typos."
-    query = "UPDATE userreviews SET rating = \'" + str(rating) + "\' WHERE name = \'" + name.replace("\'", "\'\'") + "\' and username = \'" + username + "\';"
+        return "We do not have a review by " + username + " for a movie " + title + ", please make sure there are no typos."
+    query = "UPDATE userreviews SET rating = \'" + str(rating) + "\' WHERE name = \'" + title.replace("\'", "\'\'") + "\' and username = \'" + username + "\';"
     try:
         cur.execute(query)
         conn.commit()
         return "Updated rating Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error updating rating: " + e
+        return "Error updating rating: " + str(e)
 
 #Find and Manage Users
 
@@ -239,10 +240,12 @@ def FetchUser(conn, username):
     cur = conn.cursor()
     cur.execute("Select username, email, showemail from users where username = \'" + username.replace("\'", "\'\'") + "\' limit 1;")
     result = cur.fetchall()
+    if len(result) == 0:
+        return user("NULL", "NULL")
     if result[0][2] == "FALSE":
-        return user(result[0][1])
+        return user(result[0][0])
     else:
-        return user(result[0][1], result[0][2])
+        return user(result[0][0], result[0][1])
 
 def SearchUser(conn, username):
     cur = conn.cursor()
@@ -250,29 +253,29 @@ def SearchUser(conn, username):
     result = cur.fetchall()
     resultingUsers = []
     for curr in result:
-        if curr[0][2] == "FALSE":
-            resultingUsers.append(user(curr[0][1]))
+        if curr[2] == "FALSE":
+            resultingUsers.append(user(curr[0]))
         else:
-            resultingUsers.append(user(curr[0][1], curr[0][2]))
+            resultingUsers.append(user(curr[0], curr[1]))
     return resultingUsers
 
 def AddUser(conn, username, showemail, email, password):
     if(username == ""):
         return "Please provide a username."
     cur = conn.cursor()
-    cur.execute("Select * from users where username = \'" + name.replace("\'", "\'\'") + "\';")
+    cur.execute("Select * from users where username = \'" + username.replace("\'", "\'\'") + "\';")
     if(len(cur.fetchall()) > 0):
         return "The username " + username + " is already taken."
     
     password =  hashPassword(password)
-    query = "INSERT INTO users (username, password, email, showemail) VALUES (\'" + username.replace("\'", "\'\'") + "\', \'" + password.replace("\'", "\'\'") + "\', \'" + email.replace("\'", "\'\'") + "\', " + showemail + ");"
+    query = "INSERT INTO users (username, password, email, showemail) VALUES (\'" + username.replace("\'", "\'\'") + "\', \'" + (password.decode('utf-8')).replace("\'", "\'\'") + "\', \'" + email.replace("\'", "\'\'") + "\', " + str(showemail) + ");"
     try:
         cur.execute(query)
         conn.commit()
         return "Created user Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error creating user: " + e
+        return "Error creating user: " + str(e)
 
 def DeleteUser(conn, username):
     if(username == ""):
@@ -286,9 +289,9 @@ def DeleteUser(conn, username):
         cur.execute(query)
         conn.commit()
         return "Deleted " + username + " Sucessfully."
-    except psycopg2.Error as e:
+    except Error as e:
         conn.rollback()
-        return "Error deleting user: " + e
+        return "Error deleting user: " + str(e)
 
 def ChangePassword(conn, username, oldpassword, newpassword):
     cur = conn.cursor()
@@ -302,9 +305,9 @@ def ChangePassword(conn, username, oldpassword, newpassword):
             cur.execute(query)
             conn.commit()
             return "Changed password sucessfully."
-        except psycopg2.Error as e:
+        except Error as e:
             conn.rollback()
-            return "Error changing password: " + e
+            return "Error changing password: " + str(e)
     else:
         return "Provided old password is incorrect."
 
@@ -314,15 +317,15 @@ def ChangeEmail(conn, username, password, newemail):
     if len(cur.fetchall()) == 0:
         return "No such user."
     cur.execute("Select * from users where username = \'" + username.replace("\'", "\'\'") + "\';")
-    if verifyPassword((cur.fetchall())[0][1], oldpassword):
+    if verifyPassword((cur.fetchall())[0][1], password):
         query = "Update users SET email = \'" + newemail + "\' WHERE username = \'" + username.replace("\'", "\'\'") + "\';"
         try:
             cur.execute(query)
             conn.commit()
             return "Changed email sucessfully."
-        except psycopg2.Error as e:
+        except Error as e:
             conn.rollback()
-            return "Error changing email: " + e
+            return "Error changing email: " + str(e)
     else:
         return "Provided old password is incorrect."
 
@@ -332,15 +335,15 @@ def ChangePreference(conn, username, password, preference):
     if len(cur.fetchall()) == 0:
         return "No such user."
     cur.execute("Select * from users where username = \'" + username.replace("\'", "\'\'") + "\';")
-    if verifyPassword((cur.fetchall())[0][1], oldpassword):
+    if verifyPassword((cur.fetchall())[0][1], password):
         query = "Update users SET showemail = " + preference + " WHERE username = \'" + username.replace("\'", "\'\'") + "\';"
         try:
             cur.execute(query)
             conn.commit()
             return "Changed email preferences sucessfully."
-        except psycopg2.Error as e:
+        except Error as e:
             conn.rollback()
-            return "Error changing email preferences: " + e
+            return "Error changing email preferences: " + str(e)
     else:
         return "Provided old password is incorrect."
 

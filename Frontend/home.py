@@ -22,7 +22,7 @@ def HomeScreen(movies, on_select_movie):
             },  
             "Movie Review Compatibility"),
          [
-            Movie(movie=m, on_select=lambda e, m=m: on_select_movie(m), key=i)
+            Movie(movie=m, on_select=lambda e, m=m: on_select_movie(m.name), key="movie" + str(i))
             for i, m in enumerate(movies)
         ]
     )

@@ -6,8 +6,8 @@ from Frontend.movie import MovieScreen
 from Frontend.user import UserProfile
 
 from Connection import get_db_connection
-from Connection import get_db_connection
 from DBqueries import *
+from AI.Compare import compare
 
 conn = get_db_connection()
 
@@ -24,13 +24,13 @@ def HelloWorld():
 @component
 def Root():
     page, set_page = use_state("home")
-    selected_movie, set_selected_movie, selected_user, set_selected_user = use_state(None)
+    selected_movie, set_selected_movie, selected_user, set_selected_user = use_state(None), use_state(None), use_state(None), use_state(None)
     movies = FetchRandomMovie(conn, 10)
     
     if page == "home":
         return HomeScreen(
             movies=movies,
-            on_select_movie=lambda movie: (set_selected_movie(movie), set_page("movie"))
+            on_select_movie=lambda movie: (selected_movie.set_value(movie), set_page("movie"))
         )
         
     elif page == "user":
@@ -45,13 +45,13 @@ def Root():
     # MOVIE PAGE
     elif page == "movie":
         return MovieScreen(
-            movie=selected_movie,
-            go_home=lambda: set_page("home")
+            movie=FetchMovie(conn, selected_movie.value),
+            go_home=lambda: set_page("home"),
+            conn = conn
         )
 
 app = Sanic("MyApp")
 configure(app, Root)
-
 
 if __name__ == "__main__":
     app.run(port=8000)

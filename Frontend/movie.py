@@ -1,8 +1,8 @@
 from reactpy import component, html
-from router import navigate
-
+import router
+from DBqueries import *
 @component
-def MovieScreen(movie, go_home):
+def MovieScreen(movie, go_home, conn):
     return html.div(
         {
             "style": {
@@ -15,21 +15,21 @@ def MovieScreen(movie, go_home):
                 "paddingLeft": "12px"                
             }
         },
-        HomeBtn(),
+        HomeBtn(go_home),
         html.h1(
             {
                 "style": {
                     "fontSize": "48px"
                 }
             },  
-            f"{movie.title} ({movie.year})"
+            f"{movie.name} ({movie.releasedate})"
         ),
-        MovieInfo(movie)
+        MovieInfo(movie, conn)
     )
 
 #movie informaiton that is show on the home page
 @component
-def MovieInfo(movie):
+def MovieInfo(movie, conn):
     return html.div(
         {
             "style": {
@@ -95,13 +95,14 @@ def MovieInfo(movie):
             ),
         ),
         html.p(movie.description),
-        Review() #display the reviews here
+        Review(conn, movie.name) #display the reviews here
         
     )
 
 #individual movie review
 @component
-def Review(review):
+def Review(conn, name):
+    review = FetchTopReview(conn, name)
     return html.div(
         {
             "style": {
@@ -113,9 +114,9 @@ def Review(review):
                 "width": "60vw",                       
             }
         },
-        html.h2(review.title),
-        html.p(review.username),
-        UserBtn(),
+        html.h2(review.name),
+        #html.p(review.username),
+        #UserBtn(),
         html.div(
             {
                 "style":{
@@ -126,6 +127,7 @@ def Review(review):
                 }
             },
             html.p(review.text),
+            html.p(review.rating),
             UpvoteBtn(),
             DownvoteBtn()
         )
@@ -153,7 +155,7 @@ def DownvoteBtn():
 @component
 def UserBtn(username):
     def btn_click(event):
-        navigate(f"/user/{username}")
+        router.navigate(f"/user/{username}")
 
     return html.button(
         {"on_click": btn_click},
